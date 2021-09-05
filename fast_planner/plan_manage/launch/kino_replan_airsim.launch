@@ -1,0 +1,125 @@
+<launch>
+  <!-- size of map, change the size in x, y, z according to your application -->
+  <arg name="map_size_x" value="170.0"/>
+  <arg name="map_size_y" value="80.0"/>
+  <arg name="map_size_z" value="10.0"/>
+
+  <!-- topic of your odometry such as VIO or LIO -->
+  <!-- <arg name="odom_topic" value="/airsim/odom" /> -->
+  <!-- <arg name="odom_topic" value="/drone/odom"/> -->
+  <!-- <arg name="odom_topic" value="/vins_estimator/odometry"/> -->
+  <!-- <arg name="odom_topic" value="/state_ukf/odom" /> -->
+  <arg name="odom_topic" value="/airsim_node_fast/drone_1/odom_local_ned" />
+  <!-- main algorithm params -->
+  <include file="$(find plan_manage)/launch/kino_algorithm_airsim.xml">
+
+    <arg name="map_size_x_" value="$(arg map_size_x)"/>
+    <arg name="map_size_y_" value="$(arg map_size_y)"/>
+    <arg name="map_size_z_" value="$(arg map_size_z)"/>
+    <arg name="odometry_topic" value="$(arg odom_topic)"/>
+
+    <!-- camera pose: transform of camera frame in the world frame -->
+    <!-- depth topic: depth image, 640x480 by default -->
+    <!-- don't set cloud_topic if you already set these ones! -->
+    <arg name="camera_pose_topic" value="/pcl_render_node/camera_pose"/>
+    <!-- <arg name="camera_pose_topic" value="/camera/tranformed_pose"/> -->
+    <!-- <arg name="camera_pose_topic" value="/camera/pose"/> -->
+    <!-- <arg name="camera_pose_topic" value="/vins_estimator/camera_pose"/> -->
+
+    <arg name="depth_topic" value="/pcl_render_node/depth"/>
+    <!-- <arg name="depth_topic" value="/camera/depth_registered/image_raw"/> -->
+    <!-- <arg name="depth_topic" value="airsim/depth"/> -->
+    <!-- <arg name="depth_topic" value="/airsim_node/drone_1/front_center_custom/DepthPerspective"/> -->
+    <!-- <arg name="depth_topic" value="/vins_estimator/image_track"/> -->
+
+    <!-- topic of point cloud measurement, such as from LIDAR  -->
+    <!-- don't set camera pose and depth, if you already set this one! -->
+    <!-- <arg name="cloud_topic" value="/airsim_node/drone_1/lidar/LidarCustom"/> -->
+    <!-- <arg name="cloud_topic" value="/pcl_render_node/cloud"/> -->
+
+    <!-- <arg name="cloud_topic" value="/airsim_node/drone_1/local_map"/> -->
+    <!-- <arg name="cloud_topic" value="/vins_estimator/point_cloud2"/> -->
+    <arg name="cloud_topic" value="/airsim_node/drone_1/points_filtered"/>
+    <!-- <arg name="cloud_topic" value="/airsim_node/drone_1/front_center/points"/> -->
+    <!-- <arg name="cloud_topic" value="/airsim/cloud"/> -->
+    <!-- intrinsic params of the depth camera -->
+    <arg name="cx" value="320"/>
+    <arg name="cy" value="240"/>
+    <arg name="fx" value="320"/>
+    <arg name="fy" value="320"/>
+
+    <!-- <arg name="k_depth_scaling_factor" value="256"/> -->
+    <!-- disable the downsampling by setting skip_pixel = 1 -->
+    <!-- <arg name="skip_pixel" value="1"/> -->
+
+
+    <!-- maximum velocity and acceleration the drone will reach -->
+    <arg name="max_vel" value="0.6" />
+    <arg name="max_acc" value="1" />
+
+    <!-- 1: use 2D Nav Goal to select goal  -->
+    <!-- 2: use global waypoints below  -->
+    <arg name="flight_type" value="2" />
+    
+    <!-- global waypoints -->
+    <!-- If flight_type is set to 2, the drone will travel these waypoints one by one -->
+    <arg name="point_num" value="1" />
+
+    <!-- <arg name="point0_x" value="50.0" />
+    <arg name="point0_y" value="0.0" />
+    <arg name="point0_z" value="1.5" /> -->
+
+    <arg name="point0_x" value="80" />
+    <arg name="point0_y" value="35" />
+    <arg name="point0_z" value="1.2" />
+
+    <!-- set more waypoints if you need -->
+
+    <!-- <arg name="point1_x" value="80.0" />
+    <arg name="point1_y" value="35.0" />
+    <arg name="point1_z" value="2.0" /> -->
+
+
+
+    <!-- <arg name="point1_x" value="0.0" />
+    <arg name="point1_y" value="0.0" />
+    <arg name="point1_z" value="1.669" /> -->
+<!-- 
+    <arg name="point3_x" value="0.0" />
+    <arg name="point3_y" value="25.0" />
+    <arg name="point3_z" value="1.20" />
+
+    <arg name="point4_x" value="0.0" />
+    <arg name="point4_y" value="0.0" />
+    <arg name="point4_z" value="1.0" /> -->
+
+    
+  </include>
+
+  <!-- trajectory server -->
+  <node pkg="plan_manage" name="traj_server" type="traj_server" output="screen">
+    <remap from="/position_cmd" to="planning/pos_cmd"/>
+
+    <remap from="/odom_world" to="$(arg odom_topic)"/>
+    <param name="traj_server/time_forward" value="1.5" type="double"/>
+  </node>
+
+  <node pkg="waypoint_generator" name="waypoint_generator" type="waypoint_generator" output="screen">
+    <remap from="~odom" to="$(arg odom_topic)"/>        
+    <remap from="~goal" to="/move_base_simple/goal"/>
+    <remap from="~traj_start_trigger" to="/traj_start_trigger" />
+    <param name="waypoint_type" value="manual-lonely-waypoint"/>    
+  </node>
+
+  <!-- use simulator -->
+  <include file="$(find plan_manage)/launch/simulator_airsim.xml">
+    <arg name="map_size_x_" value="$(arg map_size_x)"/>
+    <arg name="map_size_y_" value="$(arg map_size_y)"/>
+    <arg name="map_size_z_" value="$(arg map_size_z)"/>
+    <arg name="c_num" value="10"/>
+    <arg name="p_num" value="150"/>
+
+    <arg name="odometry_topic" value="$(arg odom_topic)" />
+  </include>
+
+</launch>
