@@ -1,3 +1,12 @@
+# General Information
+See original `README.MD` below
+
+```
+sudo apt-get install libarmadillo-dev ros-melodic-nlopt```
+<!-- go to ${YOUR_WORKSPACE_PATH}/src -->
+git clone https://github.com/shrjcbwg/Fast-Planner.git
+```
+
 # Fast-Planner
 
 **Fast-Planner** is developed aiming to enable quadrotor fast flight in complex unknown environments. It contains a rich set of carefully designed planning algorithms. 
