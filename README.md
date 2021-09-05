@@ -3,6 +3,7 @@ See original `README.MD` below
 
 ```
 sudo apt-get install libarmadillo-dev ros-melodic-nlopt
+
 <!-- go to ${YOUR_WORKSPACE_PATH}/src -->
 git clone https://github.com/shrjcbwg/Fast-Planner.git
 ```
